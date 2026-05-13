@@ -23,7 +23,6 @@ header {
 }
 header h1 { font-size: 1.3rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
-/* Play/pause knop onderaan in portrait */
 #bottom-controls {
   position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
   z-index: 999;
@@ -34,14 +33,6 @@ header h1 { font-size: 1.3rem; letter-spacing: 0.1em; text-transform: uppercase;
   font-size: 0.8rem; font-weight: 600; cursor: pointer;
   background: rgba(255,255,255,0.1); color: white;
   backdrop-filter: blur(10px);
-}
-
-/* VR landscape hint */
-#hint {
-  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-  z-index: 999; background: rgba(0,212,255,0.15); border: 1px solid rgba(0,212,255,0.3);
-  border-radius: 20px; padding: 0.4rem 1.2rem; font-size: 0.78rem; color: #00d4ff;
-  display: none;
 }
 
 a-scene { height: 100vh !important; }
@@ -58,12 +49,8 @@ a-scene { height: 100vh !important; }
   </header>
 
   <div id="bottom-controls">
-    <button class="btn-play" id="playBtn" onclick="togglePlay()">
-      ⏸ Pauzeer
-    </button>
+    <button class="btn-play" id="playBtn" onclick="togglePlay()">⏸ Pauzeer</button>
   </div>
-
-  <div id="hint">📱 Draai terug voor normaal beeld</div>
 
   <a-scene id="scene" vr-mode-ui="enabled: false">
     <a-assets>
@@ -87,29 +74,20 @@ a-scene { height: 100vh !important; }
     const scene = document.getElementById('scene');
     const header = document.getElementById('header');
     const bottomControls = document.getElementById('bottom-controls');
-    const hint = document.getElementById('hint');
     const playBtn = document.getElementById('playBtn');
 
-    // Start video zodra gebruiker interageert
-    function tryPlay() {
-      video.muted = true;
-      video.play().then(() => {
-        playing = true;
-        updateBtn();
-      }).catch(e => console.log('play failed:', e));
-    }
-
-    document.addEventListener('click', tryPlay, { once: true });
-    document.addEventListener('touchstart', tryPlay, { once: true });
-    tryPlay();
+    // Start video
+    video.muted = true;
+    video.play().then(() => { playing = true; updateBtn(); }).catch(() => {});
+    document.addEventListener('click', () => {
+      video.play().then(() => { playing = true; updateBtn(); });
+    }, { once: true });
 
     function togglePlay() {
       if (playing) {
-        video.pause();
-        playing = false;
+        video.pause(); playing = false;
       } else {
-        video.play();
-        playing = true;
+        video.play(); playing = true;
       }
       updateBtn();
     }
@@ -121,10 +99,11 @@ a-scene { height: 100vh !important; }
     function enterVR() {
       if (vrActive) return;
       vrActive = true;
+      // Zorg dat video blijft spelen in VR
+      video.play().then(() => { playing = true; });
       scene.enterVR();
       header.style.display = 'none';
       bottomControls.style.display = 'none';
-      hint.style.display = 'block';
     }
 
     function exitVR() {
@@ -133,16 +112,12 @@ a-scene { height: 100vh !important; }
       scene.exitVR();
       header.style.display = 'flex';
       bottomControls.style.display = 'block';
-      hint.style.display = 'none';
     }
 
     function checkOrientation() {
       const isLandscape = window.innerWidth > window.innerHeight;
-      if (isLandscape) {
-        enterVR();
-      } else {
-        exitVR();
-      }
+      if (isLandscape) enterVR();
+      else exitVR();
     }
 
     window.addEventListener('resize', () => setTimeout(checkOrientation, 200));
@@ -152,7 +127,6 @@ a-scene { height: 100vh !important; }
       vrActive = false;
       header.style.display = 'flex';
       bottomControls.style.display = 'block';
-      hint.style.display = 'none';
     });
   </script>
 
