@@ -9,39 +9,114 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #080c14; font-family: Arial, sans-serif; color: white; height: 100vh; overflow: hidden; }
-    header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 1rem 2rem; background: linear-gradient(to bottom, rgba(8,12,20,0.9), transparent); display: flex; align-items: center; gap: 1rem; }
-    .badge { background: #00d4ff; color: #000; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; padding: 0.3rem 0.7rem; border-radius: 2px; text-transform: uppercase; }
-    header h1 { font-size: 1.3rem; letter-spacing: 0.1em; text-transform: uppercase; }
-    .hint { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 999; background: rgba(0,0,0,0.6); border: 1px solid rgba(0,212,255,0.3); border-radius: 30px; padding: 0.6rem 1.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.7); display: flex; gap: 1.5rem; backdrop-filter: blur(10px); }
-    #play-overlay { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(8,12,20,0.85); cursor: pointer; transition: opacity 0.4s; }
-    #play-overlay.hidden { opacity: 0; pointer-events: none; }
-    .play-btn { width: 90px; height: 90px; border-radius: 50%; background: #00d4ff; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; box-shadow: 0 0 40px rgba(0,212,255,0.4); transition: transform 0.2s; }
-    .play-btn:hover { transform: scale(1.1); }
-    .play-btn svg { width: 36px; height: 36px; fill: #000; margin-left: 6px; }
-    #play-overlay p { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
-    a-scene { height: 100vh !important; }
+
+```
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+  padding: 1rem 2rem;
+  background: linear-gradient(to bottom, rgba(8,12,20,0.95), transparent);
+  display: flex; align-items: center; gap: 1rem;
+}
+.badge {
+  background: #00d4ff; color: #000; font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.12em; padding: 0.3rem 0.7rem; border-radius: 2px; text-transform: uppercase;
+}
+header h1 { font-size: 1.3rem; letter-spacing: 0.1em; text-transform: uppercase; flex: 1; }
+
+/* Bottom controls bar */
+.controls {
+  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+  z-index: 999; display: flex; gap: 1rem; align-items: center;
+}
+
+.btn {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.4rem; border-radius: 30px; border: none;
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.05em;
+}
+.btn:hover { transform: scale(1.05); }
+
+.btn-play {
+  background: #00d4ff; color: #000;
+  box-shadow: 0 0 20px rgba(0,212,255,0.4);
+}
+.btn-play:hover { box-shadow: 0 0 30px rgba(0,212,255,0.7); }
+
+.btn-vr {
+  background: rgba(255,255,255,0.1); color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+}
+.btn-vr:hover { background: rgba(255,255,255,0.2); }
+.btn-vr.active { background: #ff6b35; border-color: #ff6b35; color: white; box-shadow: 0 0 20px rgba(255,107,53,0.4); }
+
+/* Play overlay */
+#play-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(8,12,20,0.92); cursor: pointer; transition: opacity 0.4s;
+}
+#play-overlay.hidden { opacity: 0; pointer-events: none; }
+
+.big-play-btn {
+  width: 100px; height: 100px; border-radius: 50%; background: #00d4ff;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem;
+  box-shadow: 0 0 60px rgba(0,212,255,0.5); transition: transform 0.2s;
+}
+.big-play-btn:hover { transform: scale(1.1); }
+.big-play-btn svg { width: 40px; height: 40px; fill: #000; margin-left: 8px; }
+
+#play-overlay h2 { font-size: 1.8rem; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+#play-overlay p { color: rgba(255,255,255,0.5); font-size: 0.9rem; }
+
+/* VR split hint */
+.hint-bar {
+  position: fixed; top: 5rem; left: 50%; transform: translateX(-50%);
+  z-index: 999; background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.4);
+  border-radius: 20px; padding: 0.4rem 1.2rem; font-size: 0.78rem; color: #ff6b35;
+  display: none;
+}
+.hint-bar.visible { display: block; }
+
+a-scene { height: 100vh !important; }
+```
+
   </style>
 </head>
 <body>
+
   <header>
     <span class="badge">360°</span>
     <h1>Immersive Experience</h1>
   </header>
 
-  <div id="play-overlay" onclick="startVideo()">
-    <div class="play-btn">
+  <div class="hint-bar" id="vrHint">🥽 VR modus actief — gebruik een VR bril voor het beste effect</div>
+
+  <!-- Start overlay -->
+
+  <div id="play-overlay">
+    <div class="big-play-btn" onclick="startVideo()">
       <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
     </div>
-    <p>Klik om de 360° video te starten</p>
+    <h2>360° Experience</h2>
+    <p>Klik om te starten en rond te kijken</p>
   </div>
 
-  <div class="hint">
-    <span>🖱️ Sleep om rond te kijken</span>
-    <span>📱 Beweeg je telefoon</span>
-    <span>⛶ Volledig scherm</span>
+  <!-- Knoppen onderaan -->
+
+  <div class="controls">
+    <button class="btn btn-play" id="playPauseBtn" onclick="togglePlay()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      Pauzeer
+    </button>
+    <button class="btn btn-vr" id="vrBtn" onclick="toggleVR()">
+      🥽 VR Modus
+    </button>
   </div>
 
-  <a-scene>
+  <a-scene id="scene" vr-mode-ui="enabled: true">
     <a-assets>
       <video id="video360" src="Nog.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
     </a-assets>
@@ -52,11 +127,69 @@
   </a-scene>
 
   <script>
+    let playing = false;
+    let vrActive = false;
+    const video = document.getElementById('video360');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const vrBtn = document.getElementById('vrBtn');
+    const vrHint = document.getElementById('vrHint');
+    const scene = document.getElementById('scene');
+
     function startVideo() {
-      const video = document.getElementById('video360');
       video.play();
+      playing = true;
       document.getElementById('play-overlay').classList.add('hidden');
+      updatePlayBtn();
     }
+
+    function togglePlay() {
+      if (playing) {
+        video.pause();
+        playing = false;
+      } else {
+        video.play();
+        playing = true;
+      }
+      updatePlayBtn();
+    }
+
+    function updatePlayBtn() {
+      if (playing) {
+        playPauseBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Pauzeer`;
+      } else {
+        playPauseBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Afspelen`;
+      }
+    }
+
+    function toggleVR() {
+      if (!vrActive) {
+        scene.enterVR();
+        vrActive = true;
+        vrBtn.classList.add('active');
+        vrBtn.textContent = '❌ Sluit VR';
+        vrHint.classList.add('visible');
+      } else {
+        scene.exitVR();
+        vrActive = false;
+        vrBtn.classList.remove('active');
+        vrBtn.textContent = '🥽 VR Modus';
+        vrHint.classList.remove('visible');
+      }
+    }
+
+    // Luister ook naar VR events van A-Frame zelf
+    scene.addEventListener('enter-vr', () => {
+      vrActive = true;
+      vrBtn.classList.add('active');
+      vrBtn.textContent = '❌ Sluit VR';
+      vrHint.classList.add('visible');
+    });
+    scene.addEventListener('exit-vr', () => {
+      vrActive = false;
+      vrBtn.classList.remove('active');
+      vrBtn.textContent = '🥽 VR Modus';
+      vrHint.classList.remove('visible');
+    });
   </script>
 
 </body>
