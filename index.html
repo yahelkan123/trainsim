@@ -2,325 +2,272 @@
 
 <html lang="nl">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>360° VR Experience</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.0/aframe.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>360° Video Experience</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #000; overflow: hidden; width: 100vw; height: 100vh; font-family: Arial, sans-serif; color: white; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 ```
-/* START OVERLAY */
-#start-overlay {
-  position: fixed; inset: 0; z-index: 9999;
-  background: #080c14;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  cursor: pointer; text-align: center; padding: 2rem;
+:root {
+  --bg: #080c14;
+  --accent: #00d4ff;
+  --accent2: #ff6b35;
+  --text: #e8edf5;
+  --muted: #5a6478;
 }
-#start-overlay.hidden { display: none; }
-.tap-circle {
-  width: 90px; height: 90px; border-radius: 50%;
-  background: #00d4ff;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 1.2rem;
-  box-shadow: 0 0 50px rgba(0,212,255,0.5);
-}
-.tap-circle svg { width: 38px; height: 38px; fill: #000; margin-left: 7px; }
-#start-overlay h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-#start-overlay p { color: rgba(255,255,255,0.45); font-size: 0.82rem; line-height: 1.6; }
 
-/* HEADER */
-#header {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
-  padding: 0.9rem 1.5rem;
-  background: linear-gradient(to bottom, rgba(8,12,20,0.97) 60%, transparent);
-  display: none; align-items: center; gap: 0.8rem;
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
+
+/* Animated background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,212,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(255,107,53,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+header {
+  position: relative;
+  z-index: 10;
+  padding: 2.5rem 3rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
 .badge {
-  background: #00d4ff; color: #000;
-  font-size: 0.6rem; font-weight: 700;
-  letter-spacing: 0.12em; padding: 0.25rem 0.6rem;
-  border-radius: 2px; text-transform: uppercase;
-}
-#header h1 { font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; }
-
-/* PLAY/PAUSE */
-#bottom-bar {
-  position: fixed; bottom: 1.8rem; left: 50%;
-  transform: translateX(-50%); z-index: 500; display: none;
-}
-.btn-play {
-  padding: 0.5rem 1.4rem; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.25);
-  font-size: 0.82rem; font-weight: 600; cursor: pointer;
-  background: rgba(0,0,0,0.5); color: white;
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, var(--accent), #0099bb);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 2px;
+  text-transform: uppercase;
 }
 
-/* PORTRAIT: normale scene */
-#portrait-view { position: fixed; inset: 0; display: none; }
-#portrait-view a-scene { width: 100% !important; height: 100% !important; }
-
-/* LANDSCAPE: VR split met lensvervorming via canvas */
-#vr-view {
-  position: fixed; inset: 0;
-  display: none; background: #000;
+header h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
 }
-#vr-canvas { width: 100vw; height: 100vh; display: block; }
 
-/* Verberg A-Frame VR knop */
-.a-enter-vr-button { display: none !important; }
+header h1 span {
+  color: var(--accent);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent2);
+  animation: pulse 2s ease-in-out infinite;
+  margin-left: auto;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+main {
+  position: relative;
+  z-index: 10;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 2rem 5rem;
+}
+
+.intro {
+  margin-bottom: 2.5rem;
+  animation: fadeUp 0.8s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.intro h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  margin-bottom: 1rem;
+}
+
+.intro h2 em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.intro p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 300;
+  max-width: 480px;
+  line-height: 1.7;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  animation: fadeUp 0.8s 0.2s ease both;
+  box-shadow:
+    0 0 0 1px rgba(0,212,255,0.15),
+    0 40px 80px rgba(0,0,0,0.6),
+    0 0 60px rgba(0,212,255,0.05);
+}
+
+/* Glow border effect */
+.video-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.4), transparent 40%, rgba(255,107,53,0.3));
+  z-index: 1;
+  pointer-events: none;
+}
+
+.video-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.aspect-ratio {
+  position: relative;
+  padding-top: 56.25%; /* 16:9 */
+}
+
+.aspect-ratio iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.controls-hint {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 2rem;
+  animation: fadeUp 0.8s 0.4s ease both;
+  flex-wrap: wrap;
+}
+
+.hint-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 300;
+}
+
+.hint-icon {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+  background: rgba(255,255,255,0.03);
+}
+
+footer {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 2rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
 ```
 
   </style>
 </head>
 <body>
 
-  <!-- START -->
-
-  <div id="start-overlay" onclick="startExperience()">
-    <div class="tap-circle">
-      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-    </div>
-    <h2>360° VR Experience</h2>
-    <p>Tik om te starten<br/>Draai je telefoon voor VR modus</p>
-  </div>
-
-  <!-- HEADER -->
-
-  <div id="header">
+  <header>
     <span class="badge">360°</span>
-    <h1>Immersive Experience</h1>
+    <h1>IMMERSIVE <span>EXPERIENCE</span></h1>
+    <div class="dot"></div>
+  </header>
+
+  <main>
+    <div class="intro">
+      <h2>Kijk in alle<br/><em>360 graden</em></h2>
+      <p>Sleep met je muis of beweeg je telefoon om rondom te kijken. Een volledig meeslepende video-ervaring.</p>
+    </div>
+
+```
+<div class="video-wrapper">
+  <div class="aspect-ratio">
+    <iframe
+      src="https://www.youtube.com/embed/7F3II8dA8pQ?rel=0&modestbranding=1"
+      title="360° Video"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; xr-spatial-tracking"
+      allowfullscreen
+    ></iframe>
   </div>
+</div>
 
-  <!-- PLAY/PAUSE -->
-
-  <div id="bottom-bar">
-    <button class="btn-play" id="playBtn" onclick="togglePlay()">⏸ Pauzeer</button>
+<div class="controls-hint">
+  <div class="hint-item">
+    <div class="hint-icon">🖱️</div>
+    <span>Sleep om rond te kijken</span>
   </div>
-
-  <!-- PORTRAIT: A-Frame met gyro -->
-
-  <div id="portrait-view">
-    <a-scene id="portrait-scene" vr-mode-ui="enabled:false" embedded>
-      <a-assets>
-        <video id="vid-main" src="Nog.mp4" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
-      </a-assets>
-      <a-videosphere src="#vid-main" rotation="0 180 0"></a-videosphere>
-      <a-camera
-        look-controls="enabled:true; magicWindowTrackingEnabled:true; pointerLockEnabled:false"
-        wasd-controls="enabled:false">
-      </a-camera>
-    </a-scene>
+  <div class="hint-item">
+    <div class="hint-icon">📱</div>
+    <span>Beweeg je telefoon</span>
   </div>
-
-  <!-- VR CANVAS voor barrel distortion -->
-
-  <div id="vr-view">
-    <canvas id="vr-canvas"></canvas>
+  <div class="hint-item">
+    <div class="hint-icon">🥽</div>
+    <span>VR-bril ondersteund</span>
   </div>
+  <div class="hint-item">
+    <div class="hint-icon">⛶</div>
+    <span>Volledig scherm voor beste ervaring</span>
+  </div>
+</div>
+```
 
-  <script>
-    const vidMain   = document.getElementById('vid-main');
-    const portraitV = document.getElementById('portrait-view');
-    const vrView    = document.getElementById('vr-view');
-    const header    = document.getElementById('header');
-    const bottomBar = document.getElementById('bottom-bar');
-    const playBtn   = document.getElementById('playBtn');
-    const startOv   = document.getElementById('start-overlay');
-    const canvas    = document.getElementById('vr-canvas');
-    const ctx       = canvas.getContext('2d');
+  </main>
 
-    let playing = false;
-    let inVR    = false;
-    let started = false;
-    let animFrame = null;
-
-    // Gyro voor VR modus
-    let alpha = 0, beta = 90, gamma = 0;
-    let yaw = 0, pitch = 0;
-
-    // Offscreen video renderer voor VR canvas
-    let offscreen = document.createElement('canvas');
-    let offCtx = offscreen.getContext('2d');
-
-    /* ── GYRO ── */
-    function requestGyro() {
-      if (typeof DeviceOrientationEvent !== 'undefined' &&
-          typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(r => { if (r === 'granted') listenGyro(); })
-          .catch(console.error);
-      } else {
-        listenGyro();
-      }
-    }
-
-    function listenGyro() {
-      window.addEventListener('deviceorientation', e => {
-        alpha = e.alpha || 0;
-        beta  = e.beta  || 90;
-        gamma = e.gamma || 0;
-        // Convert to yaw/pitch for VR canvas panning
-        yaw   = ((alpha / 360) * Math.PI * 2);
-        pitch = ((beta - 90) / 180) * Math.PI;
-      });
-    }
-
-    /* ── START ── */
-    function startExperience() {
-      vidMain.muted = true;
-      vidMain.play().then(() => {
-        playing = true;
-        started = true;
-        updateBtn();
-        startOv.classList.add('hidden');
-        requestGyro();
-        checkOrientation();
-      }).catch(e => console.log('play error:', e));
-    }
-
-    /* ── PLAY/PAUSE ── */
-    function togglePlay() {
-      if (playing) { vidMain.pause(); playing = false; }
-      else         { vidMain.play();  playing = true;  }
-      updateBtn();
-    }
-    function updateBtn() {
-      playBtn.textContent = playing ? '⏸ Pauzeer' : '▶ Afspelen';
-    }
-
-    /* ── ORIENTATION ── */
-    function checkOrientation() {
-      if (!started) return;
-      let landscape;
-      if (screen.orientation) {
-        landscape = screen.orientation.type.includes('landscape');
-      } else {
-        landscape = window.innerWidth > window.innerHeight;
-      }
-      landscape ? showVR() : showPortrait();
-    }
-
-    function showPortrait() {
-      if (!inVR && started) {
-        portraitV.style.display = 'block';
-        header.style.display    = 'flex';
-        bottomBar.style.display = 'block';
-        return;
-      }
-      if (!inVR) return;
-      inVR = false;
-      cancelAnimationFrame(animFrame);
-      vrView.style.display    = 'none';
-      portraitV.style.display = 'block';
-      header.style.display    = 'flex';
-      bottomBar.style.display = 'block';
-    }
-
-    function showVR() {
-      if (inVR) return;
-      inVR = true;
-      portraitV.style.display = 'none';
-      header.style.display    = 'none';
-      bottomBar.style.display = 'none';
-      vrView.style.display    = 'block';
-      resizeCanvas();
-      renderVR();
-    }
-
-    /* ── VR CANVAS RENDER met barrel distortion ── */
-    function resizeCanvas() {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      offscreen.width  = window.innerWidth;
-      offscreen.height = window.innerHeight;
-    }
-
-    function renderVR() {
-      if (!inVR) return;
-      animFrame = requestAnimationFrame(renderVR);
-
-      const W = canvas.width;
-      const H = canvas.height;
-      const halfW = W / 2;
-
-      // Draw video to offscreen
-      offCtx.drawImage(vidMain, 0, 0, offscreen.width, offscreen.height);
-
-      // Draw left and right eye with barrel distortion
-      drawEye(ctx, offCtx, 0,     0, halfW, H, -0.0);
-      drawEye(ctx, offCtx, halfW, 0, halfW, H, -0.0);
-
-      // Divider
-      ctx.fillStyle = '#000';
-      ctx.fillRect(halfW - 1, 0, 2, H);
-    }
-
-    function drawEye(ctx, src, x, y, w, h) {
-      // Sample the equirectangular video and apply circular barrel mask
-      const imageData = ctx.createImageData(w, h);
-      const srcCanvas = src.canvas;
-      const srcW = srcCanvas.width;
-      const srcH = srcCanvas.height;
-
-      // Get source pixels
-      const srcData = src.getImageData(0, 0, srcW, srcH);
-
-      const cx = w / 2;
-      const cy = h / 2;
-      const R  = Math.min(cx, cy) * 0.95;
-      const k1 = 0.22; // barrel distortion strength
-
-      for (let py = 0; py < h; py++) {
-        for (let px = 0; px < w; px++) {
-          const nx = (px - cx) / R;
-          const ny = (py - cy) / R;
-          const r2 = nx * nx + ny * ny;
-
-          if (r2 > 1) continue; // outside lens circle
-
-          // Barrel distortion correction
-          const r = Math.sqrt(r2);
-          const distort = 1 + k1 * r2;
-          const sx = nx / distort;
-          const sy = ny / distort;
-
-          // Convert to equirectangular UV
-          // Add gyro yaw offset
-          let u = (Math.atan2(sx, Math.sqrt(1 - sx*sx - sy*sy)) / Math.PI + yaw / (Math.PI * 2) + 0.5) % 1;
-          let v = (Math.asin(Math.max(-1, Math.min(1, sy))) / Math.PI + 0.5 + pitch / Math.PI);
-          v = Math.max(0, Math.min(1, v));
-          if (u < 0) u += 1;
-
-          const srcX = Math.floor(u * srcW);
-          const srcY = Math.floor(v * srcH);
-          const si = (srcY * srcW + srcX) * 4;
-          const di = (py * w + px) * 4;
-
-          imageData.data[di]     = srcData.data[si];
-          imageData.data[di + 1] = srcData.data[si + 1];
-          imageData.data[di + 2] = srcData.data[si + 2];
-          imageData.data[di + 3] = 255;
-        }
-      }
-
-      ctx.putImageData(imageData, x, y);
-    }
-
-    /* ── EVENTS ── */
-    window.addEventListener('resize', () => {
-      setTimeout(() => {
-        resizeCanvas();
-        checkOrientation();
-      }, 300);
-    });
-    if (screen.orientation) {
-      screen.orientation.addEventListener('change', () => setTimeout(checkOrientation, 400));
-    }
-  </script>
+  <footer>
+    Bekijk ook op <a href="https://youtu.be/7F3II8dA8pQ" target="_blank">YouTube</a>
+  </footer>
 
 </body>
 </html>
