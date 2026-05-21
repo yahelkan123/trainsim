@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="nl">
 <head>
   <meta charset="UTF-8"/>
@@ -10,56 +9,53 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; overflow: hidden; width: 100vw; height: 100vh; font-family: Arial, sans-serif; color: white; }
 
-```
-#start-overlay {
-  position: fixed; inset: 0; z-index: 9999;
-  background: #080c14;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  cursor: pointer; text-align: center; padding: 2rem;
-}
-#start-overlay.hidden { display: none; }
-.tap-circle {
-  width: 90px; height: 90px; border-radius: 50%;
-  background: #00d4ff;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 1.2rem;
-  box-shadow: 0 0 50px rgba(0,212,255,0.5);
-}
-.tap-circle svg { width: 38px; height: 38px; fill: #000; margin-left: 7px; }
-#start-overlay h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-#start-overlay p { color: rgba(255,255,255,0.45); font-size: 0.82rem; line-height: 1.6; }
+    #start-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #080c14;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer; text-align: center; padding: 2rem;
+    }
+    #start-overlay.hidden { display: none; }
+    .tap-circle {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: #00d4ff;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 0 50px rgba(0,212,255,0.5);
+    }
+    .tap-circle svg { width: 38px; height: 38px; fill: #000; margin-left: 7px; }
+    #start-overlay h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    #start-overlay p { color: rgba(255,255,255,0.45); font-size: 0.82rem; line-height: 1.6; }
 
-#header {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
-  padding: 0.9rem 1.5rem;
-  background: linear-gradient(to bottom, rgba(8,12,20,0.97) 60%, transparent);
-  display: flex; align-items: center; gap: 0.8rem;
-}
-.badge {
-  background: #00d4ff; color: #000;
-  font-size: 0.6rem; font-weight: 700;
-  letter-spacing: 0.12em; padding: 0.25rem 0.6rem;
-  border-radius: 2px; text-transform: uppercase;
-}
-#header h1 { font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      padding: 0.9rem 1.5rem;
+      background: linear-gradient(to bottom, rgba(8,12,20,0.97) 60%, transparent);
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .badge {
+      background: #00d4ff; color: #000;
+      font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.12em; padding: 0.25rem 0.6rem;
+      border-radius: 2px; text-transform: uppercase;
+    }
+    #header h1 { font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; }
 
-#bottom-bar {
-  position: fixed; bottom: 1.8rem; left: 50%;
-  transform: translateX(-50%); z-index: 500;
-}
-.btn-play {
-  padding: 0.5rem 1.4rem; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.25);
-  font-size: 0.82rem; font-weight: 600; cursor: pointer;
-  background: rgba(0,0,0,0.5); color: white;
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-}
+    #bottom-bar {
+      position: fixed; bottom: 1.8rem; left: 50%;
+      transform: translateX(-50%); z-index: 500;
+    }
+    .btn-play {
+      padding: 0.5rem 1.4rem; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.25);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      background: rgba(0,0,0,0.5); color: white;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
 
-a-scene { width: 100vw !important; height: 100vh !important; }
-.a-enter-vr-button { display: none !important; }
-```
-
+    a-scene { width: 100vw !important; height: 100vh !important; }
+    .a-enter-vr-button { display: none !important; }
   </style>
 </head>
 <body>
