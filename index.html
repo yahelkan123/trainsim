@@ -60,15 +60,6 @@
 </head>
 <body>
 
-  <!-- Video BUITEN a-assets zodat iOS hem gewoon kan afspelen -->
-  <video id="vid"
-    src="Nog.mp4"
-    loop muted
-    playsinline webkit-playsinline
-    crossorigin="anonymous"
-    style="display:none">
-  </video>
-
   <div id="start-overlay" onclick="startExperience()">
     <div class="tap-circle">
       <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -88,57 +79,91 @@
 
   <a-scene vr-mode-ui="enabled:false" embedded>
     <a-assets>
-      <!-- Verwijs naar bestaande video element -->
-      <video id="vid-asset" src="Nog.mp4" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+      <video id="vid" src="Nog.mp4" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
     </a-assets>
-    <a-videosphere src="#vid-asset" rotation="0 180 0"></a-videosphere>
+    <a-videosphere src="#vid" rotation="0 180 0"></a-videosphere>
     <a-camera
-      look-controls="enabled:true; magicWindowTrackingEnabled:true; touchEnabled:true; pointerLockEnabled:false"
+      id="cam"
+      look-controls="enabled:false"
       wasd-controls="enabled:false"
       position="0 0 0">
     </a-camera>
   </a-scene>
 
   <script>
-    const vid     = document.getElementById('vid-asset');
+    const vid     = document.getElementById('vid');
     const playBtn = document.getElementById('playBtn');
     const overlay = document.getElementById('start-overlay');
+    const cam     = document.getElementById('cam');
     let playing   = false;
+    let gyroActive = false;
+
+    // Gyro waarden
+    let currentAlpha = 0;
+    let currentBeta  = 90;
+    let currentGamma = 0;
+
+    // Handmatig gyro uitlezen en camera draaien
+    function onOrientation(e) {
+      currentAlpha = e.alpha || 0;
+      currentBeta  = e.beta  || 90;
+      currentGamma = e.gamma || 0;
+
+      // Zet om naar A-Frame rotatie afhankelijk van schermoriëntatie
+      let x, y, z;
+      const orient = screen.orientation ? screen.orientation.angle : window.orientation || 0;
+
+      if (orient === 0 || orient === 180) {
+        // Portrait
+        x = currentBeta  - 90;
+        y = -currentAlpha;
+        z = currentGamma;
+      } else {
+        // Landscape
+        x = currentGamma;
+        y = -currentAlpha;
+        z = -(currentBeta - 90);
+      }
+
+      cam.setAttribute('rotation', { x: x, y: y, z: z });
+    }
+
+    function startGyro() {
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        // iOS 13+
+        DeviceOrientationEvent.requestPermission()
+          .then(res => {
+            if (res === 'granted') {
+              window.addEventListener('deviceorientation', onOrientation, true);
+              gyroActive = true;
+            }
+          })
+          .catch(console.error);
+      } else {
+        // Android / desktop
+        window.addEventListener('deviceorientation', onOrientation, true);
+        gyroActive = true;
+      }
+    }
 
     function startExperience() {
-      const go = () => {
-        vid.muted = true;
-        const p = vid.play();
-        if (p !== undefined) {
-          p.then(() => {
-            playing = true;
-            updateBtn();
-            overlay.classList.add('hidden');
-          }).catch(() => {
-            // Probeer nogmaals na korte delay
-            setTimeout(() => {
-              vid.play();
-              playing = true;
-              updateBtn();
-              overlay.classList.add('hidden');
-            }, 500);
-          });
-        } else {
+      // Eerst gyro toestemming vragen (iOS vereist dit bij gebruikersinteractie)
+      startGyro();
+
+      vid.muted = true;
+      vid.play().then(() => {
+        playing = true;
+        updateBtn();
+        overlay.classList.add('hidden');
+      }).catch(() => {
+        setTimeout(() => {
+          vid.play();
           playing = true;
           updateBtn();
           overlay.classList.add('hidden');
-        }
-      };
-
-      // Vraag gyro toestemming op iOS
-      if (typeof DeviceOrientationEvent !== 'undefined' &&
-          typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(() => go())
-          .catch(() => go());
-      } else {
-        go();
-      }
+        }, 300);
+      });
     }
 
     function togglePlay() {
@@ -150,14 +175,6 @@
     function updateBtn() {
       playBtn.textContent = playing ? '⏸ Pauzeer' : '▶ Afspelen';
     }
-
-    // Zorg dat A-Frame de video oppikt zodra scene geladen is
-    const scene = document.querySelector('a-scene');
-    scene.addEventListener('loaded', () => {
-      // Trigger een kleine update zodat videosphere de video oppikt
-      const sphere = document.querySelector('a-videosphere');
-      sphere.setAttribute('src', '#vid-asset');
-    });
   </script>
 
 </body>
