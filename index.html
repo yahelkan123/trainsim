@@ -4,7 +4,6 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>360° Experience</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.0/aframe.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; overflow: hidden; width: 100vw; height: 100vh; font-family: Arial, sans-serif; color: white; }
@@ -54,6 +53,7 @@
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
 
+    #scene-container { position: fixed; inset: 0; display: none; }
     a-scene { width: 100vw !important; height: 100vh !important; }
     .a-enter-vr-button { display: none !important; }
   </style>
@@ -77,48 +77,71 @@
     <button class="btn-play" id="playBtn" onclick="togglePlay()">⏸ Pauzeer</button>
   </div>
 
-  <a-scene vr-mode-ui="enabled:false" embedded>
-    <a-assets>
-      <video id="vid"
-        src="Nog.mp4"
-        loop muted
-        playsinline webkit-playsinline
-        crossorigin="anonymous">
-      </video>
-    </a-assets>
-    <a-videosphere src="#vid" rotation="0 180 0"></a-videosphere>
-    <a-camera
-      look-controls="enabled:true; magicWindowTrackingEnabled:true; touchEnabled:true; pointerLockEnabled:false"
-      wasd-controls="enabled:false"
-      position="0 0 0">
-    </a-camera>
-  </a-scene>
+  <div id="scene-container"></div>
 
   <script>
-    const vid     = document.getElementById('vid');
-    const playBtn = document.getElementById('playBtn');
-    const overlay = document.getElementById('start-overlay');
-    let playing   = false;
+    const playBtn   = document.getElementById('playBtn');
+    const overlay   = document.getElementById('start-overlay');
+    const container = document.getElementById('scene-container');
+    let playing = false;
+    let vid = null;
+
+    function buildScene() {
+      container.innerHTML = `
+        <a-scene vr-mode-ui="enabled:false" embedded>
+          <a-assets>
+            <video id="vid"
+              src="Nog.mp4"
+              loop muted autoplay
+              playsinline webkit-playsinline
+              crossorigin="anonymous">
+            </video>
+          </a-assets>
+          <a-videosphere src="#vid" rotation="0 180 0"></a-videosphere>
+          <a-camera
+            look-controls="enabled:true; magicWindowTrackingEnabled:true; touchEnabled:true; pointerLockEnabled:false"
+            wasd-controls="enabled:false"
+            position="0 0 0">
+          </a-camera>
+        </a-scene>
+      `;
+      container.style.display = 'block';
+      vid = document.getElementById('vid');
+      vid.muted = true;
+      vid.play().then(() => { playing = true; updateBtn(); });
+    }
 
     function startExperience() {
-      // iOS vereist gebruikersinteractie + toestemming gyro
+      // Vraag gyro toestemming op iOS — MOET voor A-Frame geladen wordt
       if (typeof DeviceOrientationEvent !== 'undefined' &&
           typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
           .then(res => {
-            if (res === 'granted') console.log('Gyro toegestaan');
-          }).catch(console.error);
-      }
-
-      vid.muted = true;
-      vid.play().then(() => {
-        playing = true;
-        updateBtn();
+            overlay.classList.add('hidden');
+            // Laad A-Frame PAS na toestemming
+            loadAFrame(() => buildScene());
+          })
+          .catch(() => {
+            overlay.classList.add('hidden');
+            loadAFrame(() => buildScene());
+          });
+      } else {
+        // Android of desktop — geen toestemming nodig
         overlay.classList.add('hidden');
-      }).catch(e => console.log('play error:', e));
+        loadAFrame(() => buildScene());
+      }
+    }
+
+    function loadAFrame(callback) {
+      if (window.AFRAME) { callback(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.0/aframe.min.js';
+      s.onload = callback;
+      document.head.appendChild(s);
     }
 
     function togglePlay() {
+      if (!vid) return;
       if (playing) { vid.pause(); playing = false; }
       else         { vid.play();  playing = true;  }
       updateBtn();
