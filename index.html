@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>360° Experience</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.0/aframe.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; overflow: hidden; width: 100vw; height: 100vh; font-family: Arial, sans-serif; color: white; }
@@ -53,12 +54,20 @@
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
 
-    #scene-container { position: fixed; inset: 0; display: none; }
     a-scene { width: 100vw !important; height: 100vh !important; }
     .a-enter-vr-button { display: none !important; }
   </style>
 </head>
 <body>
+
+  <!-- Video BUITEN a-assets zodat iOS hem gewoon kan afspelen -->
+  <video id="vid"
+    src="Nog.mp4"
+    loop muted
+    playsinline webkit-playsinline
+    crossorigin="anonymous"
+    style="display:none">
+  </video>
 
   <div id="start-overlay" onclick="startExperience()">
     <div class="tap-circle">
@@ -77,71 +86,62 @@
     <button class="btn-play" id="playBtn" onclick="togglePlay()">⏸ Pauzeer</button>
   </div>
 
-  <div id="scene-container"></div>
+  <a-scene vr-mode-ui="enabled:false" embedded>
+    <a-assets>
+      <!-- Verwijs naar bestaande video element -->
+      <video id="vid-asset" src="Nog.mp4" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+    </a-assets>
+    <a-videosphere src="#vid-asset" rotation="0 180 0"></a-videosphere>
+    <a-camera
+      look-controls="enabled:true; magicWindowTrackingEnabled:true; touchEnabled:true; pointerLockEnabled:false"
+      wasd-controls="enabled:false"
+      position="0 0 0">
+    </a-camera>
+  </a-scene>
 
   <script>
-    const playBtn   = document.getElementById('playBtn');
-    const overlay   = document.getElementById('start-overlay');
-    const container = document.getElementById('scene-container');
-    let playing = false;
-    let vid = null;
-
-    function buildScene() {
-      container.innerHTML = `
-        <a-scene vr-mode-ui="enabled:false" embedded>
-          <a-assets>
-            <video id="vid"
-              src="Nog.mp4"
-              loop muted autoplay
-              playsinline webkit-playsinline
-              crossorigin="anonymous">
-            </video>
-          </a-assets>
-          <a-videosphere src="#vid" rotation="0 180 0"></a-videosphere>
-          <a-camera
-            look-controls="enabled:true; magicWindowTrackingEnabled:true; touchEnabled:true; pointerLockEnabled:false"
-            wasd-controls="enabled:false"
-            position="0 0 0">
-          </a-camera>
-        </a-scene>
-      `;
-      container.style.display = 'block';
-      vid = document.getElementById('vid');
-      vid.muted = true;
-      vid.play().then(() => { playing = true; updateBtn(); });
-    }
+    const vid     = document.getElementById('vid-asset');
+    const playBtn = document.getElementById('playBtn');
+    const overlay = document.getElementById('start-overlay');
+    let playing   = false;
 
     function startExperience() {
-      // Vraag gyro toestemming op iOS — MOET voor A-Frame geladen wordt
+      const go = () => {
+        vid.muted = true;
+        const p = vid.play();
+        if (p !== undefined) {
+          p.then(() => {
+            playing = true;
+            updateBtn();
+            overlay.classList.add('hidden');
+          }).catch(() => {
+            // Probeer nogmaals na korte delay
+            setTimeout(() => {
+              vid.play();
+              playing = true;
+              updateBtn();
+              overlay.classList.add('hidden');
+            }, 500);
+          });
+        } else {
+          playing = true;
+          updateBtn();
+          overlay.classList.add('hidden');
+        }
+      };
+
+      // Vraag gyro toestemming op iOS
       if (typeof DeviceOrientationEvent !== 'undefined' &&
           typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
-          .then(res => {
-            overlay.classList.add('hidden');
-            // Laad A-Frame PAS na toestemming
-            loadAFrame(() => buildScene());
-          })
-          .catch(() => {
-            overlay.classList.add('hidden');
-            loadAFrame(() => buildScene());
-          });
+          .then(() => go())
+          .catch(() => go());
       } else {
-        // Android of desktop — geen toestemming nodig
-        overlay.classList.add('hidden');
-        loadAFrame(() => buildScene());
+        go();
       }
     }
 
-    function loadAFrame(callback) {
-      if (window.AFRAME) { callback(); return; }
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.0/aframe.min.js';
-      s.onload = callback;
-      document.head.appendChild(s);
-    }
-
     function togglePlay() {
-      if (!vid) return;
       if (playing) { vid.pause(); playing = false; }
       else         { vid.play();  playing = true;  }
       updateBtn();
@@ -150,6 +150,14 @@
     function updateBtn() {
       playBtn.textContent = playing ? '⏸ Pauzeer' : '▶ Afspelen';
     }
+
+    // Zorg dat A-Frame de video oppikt zodra scene geladen is
+    const scene = document.querySelector('a-scene');
+    scene.addEventListener('loaded', () => {
+      // Trigger een kleine update zodat videosphere de video oppikt
+      const sphere = document.querySelector('a-videosphere');
+      sphere.setAttribute('src', '#vid-asset');
+    });
   </script>
 
 </body>
